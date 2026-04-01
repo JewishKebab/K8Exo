@@ -1,16 +1,12 @@
 global:
-  host: "dify.local"
-  port: 80
-  enableTLS: false
-
-  # Point Dify at our in-cluster Ollama instance
-  extraBackendEnvs:
-    - name: OLLAMA_API_BASE
-      value: "http://ollama.platform.svc.cluster.local:11434"
+  useTLS: false
+  externalPort: 80
+  appSecretKey: "changeme-replace-with-openssl-rand-base64-42"
+  innerApiKey: "changeme-replace-with-openssl-rand-base64-42"
 
 # ── API (backend) ────────────────────────────────────────────────────────────
 api:
-  replicaCount: 1
+  replicas: 1
   resources:
     requests:
       memory: "512Mi"
@@ -18,10 +14,13 @@ api:
     limits:
       memory: "2Gi"
       cpu: "2"
+  extraEnv:
+    - name: OLLAMA_API_BASE
+      value: "http://ollama.platform.svc.cluster.local:11434"
 
 # ── Worker (async tasks: embeddings, indexing) ───────────────────────────────
 worker:
-  replicaCount: 1
+  replicas: 1
   resources:
     requests:
       memory: "512Mi"
@@ -29,10 +28,13 @@ worker:
     limits:
       memory: "2Gi"
       cpu: "2"
+  extraEnv:
+    - name: OLLAMA_API_BASE
+      value: "http://ollama.platform.svc.cluster.local:11434"
 
 # ── Web (frontend) ───────────────────────────────────────────────────────────
 web:
-  replicaCount: 1
+  replicas: 1
   resources:
     requests:
       memory: "256Mi"
@@ -43,7 +45,7 @@ web:
 
 # ── Sandbox (code execution) ─────────────────────────────────────────────────
 sandbox:
-  replicaCount: 1
+  replicas: 1
   resources:
     requests:
       memory: "256Mi"
@@ -55,33 +57,49 @@ sandbox:
 # ── PostgreSQL (bundled) ─────────────────────────────────────────────────────
 postgresql:
   enabled: true
+  global:
+    storageClass: "local-path"
+    postgresql:
+      auth:
+        postgresPassword: "difypostgres"
+        database: "dify"
   primary:
     persistence:
       enabled: true
       size: 10Gi
-      storageClass: "local-path"
 
 # ── Redis (bundled) ──────────────────────────────────────────────────────────
 redis:
   enabled: true
+  global:
+    redis:
+      password: "difyredis"
   master:
     persistence:
       enabled: true
       size: 2Gi
       storageClass: "local-path"
 
-# ── Weaviate disabled — we use Qdrant instead ────────────────────────────────
+# ── Vector DB — use bundled Qdrant ───────────────────────────────────────────
+vectorDB:
+  useExternal: false
+
+qdrant:
+  enabled: true
+  replicaCount: 1
+  apiKey: "difyqdrant"
+  persistence:
+    size: 10Gi
+    storageClass: "local-path"
+
 weaviate:
   enabled: false
 
-# ── Persistent storage for uploaded files ────────────────────────────────────
-minio:
-  enabled: true
-  persistence:
-    enabled: true
-    size: 20Gi
-    storageClass: "local-path"
-
-service:
-  type: ClusterIP
-  port: 80
+# ── Storage (local filesystem in PVC) ────────────────────────────────────────
+storage:
+  type: "local"
+  local:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: "local-path"

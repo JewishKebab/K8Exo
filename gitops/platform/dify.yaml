@@ -11,7 +11,7 @@ spec:
     # Upstream Helm chart
     - repoURL: https://langgenius.github.io/dify-helm
       chart: dify
-      targetRevision: "0.3.4"
+      targetRevision: "3.9.0"
       helm:
         valueFiles:
           - $values/helm-values/dify/values.yaml
