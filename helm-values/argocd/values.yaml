@@ -1,0 +1,9 @@
+global:
+  domain: argocd.local
+
+server:
+  insecure: true   # We're local — no TLS needed
+
+configs:
+  params:
+    server.insecure: true
