@@ -1,0 +1,87 @@
+global:
+  host: "dify.local"
+  port: 80
+  enableTLS: false
+
+  # Point Dify at our in-cluster Ollama instance
+  extraBackendEnvs:
+    - name: OLLAMA_API_BASE
+      value: "http://ollama.platform.svc.cluster.local:11434"
+
+# ── API (backend) ────────────────────────────────────────────────────────────
+api:
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "2"
+
+# ── Worker (async tasks: embeddings, indexing) ───────────────────────────────
+worker:
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "2"
+
+# ── Web (frontend) ───────────────────────────────────────────────────────────
+web:
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "1"
+
+# ── Sandbox (code execution) ─────────────────────────────────────────────────
+sandbox:
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+# ── PostgreSQL (bundled) ─────────────────────────────────────────────────────
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: "local-path"
+
+# ── Redis (bundled) ──────────────────────────────────────────────────────────
+redis:
+  enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+      storageClass: "local-path"
+
+# ── Weaviate disabled — we use Qdrant instead ────────────────────────────────
+weaviate:
+  enabled: false
+
+# ── Persistent storage for uploaded files ────────────────────────────────────
+minio:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: "local-path"
+
+service:
+  type: ClusterIP
+  port: 80
