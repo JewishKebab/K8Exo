@@ -1,0 +1,37 @@
+ollama:
+  gpu:
+    enabled: true
+    type: nvidia
+    number: 1
+  # Models to pull on startup — fits comfortably on RTX 3060 12GB
+  models:
+    - llama3.2
+    - nomic-embed-text   # for embeddings / Qdrant ingestion
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1"
+    nvidia.com/gpu: "1"
+  limits:
+    memory: "10Gi"
+    cpu: "4"
+    nvidia.com/gpu: "1"
+
+persistentVolume:
+  enabled: true
+  size: 30Gi
+  storageClass: "local-path"   # k3s built-in storage class
+
+service:
+  type: ClusterIP
+  port: 11434
+
+# Liveness/readiness give the model time to load
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ollama
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    # Upstream Helm chart
+    - repoURL: https://otwld.github.io/ollama-helm/
+      chart: ollama
+      targetRevision: "0.58.0"
+      helm:
+        valueFiles:
+          - $values/helm-values/ollama/values.yaml
+    # Our values live in this repo
+    - repoURL: https://github.com/JewishKebab/K8Exo
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false   # namespace created by Terraform

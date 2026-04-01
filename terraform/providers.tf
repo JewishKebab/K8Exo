@@ -27,5 +27,8 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  # Inherits ~/.kube/config automatically (same as KUBECONFIG env var)
+  kubernetes {
+    config_path    = "~/.kube/config"
+    config_context = "default"
+  }
 }
