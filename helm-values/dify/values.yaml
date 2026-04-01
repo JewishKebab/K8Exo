@@ -1,8 +1,6 @@
 global:
   useTLS: false
-  externalPort: 80
   appSecretKey: "changeme-replace-with-openssl-rand-base64-42"
-  innerApiKey: "changeme-replace-with-openssl-rand-base64-42"
 
 # ── API (backend) ────────────────────────────────────────────────────────────
 api:
@@ -80,26 +78,32 @@ redis:
       size: 2Gi
       storageClass: "local-path"
 
-# ── Vector DB — use bundled Qdrant ───────────────────────────────────────────
+# ── Vector DB — bundled Qdrant ───────────────────────────────────────────────
 vectorDB:
-  useExternal: false
+  useExternal: true
+  externalType: "qdrant"
+  externalQdrant:
+    endpoint: "http://dify-qdrant:6333"
+    apiKey: "difyqdrant"
 
 qdrant:
   enabled: true
   replicaCount: 1
   apiKey: "difyqdrant"
   persistence:
+    accessModes: ["ReadWriteOnce"]
     size: 10Gi
     storageClass: "local-path"
 
 weaviate:
   enabled: false
 
-# ── Storage (local filesystem in PVC) ────────────────────────────────────────
-storage:
+# ── Persistent storage for uploaded files ────────────────────────────────────
+persistence:
   type: "local"
   local:
-    persistence:
-      enabled: true
-      size: 20Gi
+    persistentVolumeClaim:
       storageClass: "local-path"
+      accessModes:
+        - ReadWriteOnce
+      size: 20Gi
