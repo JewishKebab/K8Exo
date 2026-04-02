@@ -3,7 +3,8 @@ TF_VERSION   := 1.9.8
 TF_BIN       := /usr/local/bin/terraform
 TF_DIR       := $(CURDIR)/terraform
 
-.PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy forward forward-argocd forward-dify
+.PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy \
+        forward forward-stop forward-argocd forward-dify forward-dify-api forward-ollama forward-qdrant
 
 ## Single entry point — run this once to bring up the full stack
 bootstrap: install-terraform install-k3s kubeconfig tf-init tf-apply
@@ -58,19 +59,51 @@ tf-apply:
 	@cd $(TF_DIR) && terraform apply -input=false -auto-approve
 
 # ── Port Forwards ────────────────────────────────────────────────────────────
+# Ports:
+#   8080  → ArgoCD UI
+#   3000  → Dify Web (frontend)
+#   5001  → Dify API (backend)
+#   11434 → Ollama (LLM inference)
+#   6333  → Qdrant (vector DB REST)
 
-## Forward all services (runs in background)
+## Forward all services in the background
 forward:
-	@kubectl port-forward svc/argocd-server -n argocd 8080:443 &
-	@kubectl port-forward svc/dify-web -n platform 3000:80 &
-	@echo "ArgoCD → http://localhost:8080"
-	@echo "Dify   → http://localhost:3000"
+	@kubectl port-forward svc/argocd-server   -n argocd   8080:80    &
+	@kubectl port-forward svc/dify-web        -n platform 3000:80    &
+	@kubectl port-forward svc/dify-api        -n platform 5001:5001  &
+	@kubectl port-forward svc/ollama          -n platform 11434:11434 &
+	@kubectl port-forward svc/dify-qdrant     -n platform 6333:6333  &
+	@echo ""
+	@echo "Services forwarded (background):"
+	@echo "  ArgoCD   → http://localhost:8080"
+	@echo "  Dify UI  → http://localhost:3000"
+	@echo "  Dify API → http://localhost:5001"
+	@echo "  Ollama   → http://localhost:11434"
+	@echo "  Qdrant   → http://localhost:6333"
+	@echo ""
+	@echo "ArgoCD admin password:"
+	@kubectl -n argocd get secret argocd-initial-admin-secret \
+		-o jsonpath='{.data.password}' | base64 -d && echo
+
+## Kill all background port-forwards started by 'make forward'
+forward-stop:
+	@pkill -f "kubectl port-forward" || true
+	@echo "All port-forwards stopped."
 
 forward-argocd:
-	kubectl port-forward svc/argocd-server -n argocd 8080:443
+	kubectl port-forward svc/argocd-server -n argocd 8080:80
 
 forward-dify:
 	kubectl port-forward svc/dify-web -n platform 3000:80
+
+forward-dify-api:
+	kubectl port-forward svc/dify-api -n platform 5001:5001
+
+forward-ollama:
+	kubectl port-forward svc/ollama -n platform 11434:11434
+
+forward-qdrant:
+	kubectl port-forward svc/dify-qdrant -n platform 6333:6333
 
 # Tear everything down (keeps k3s intact — run k3s-uninstall.sh separately)
 destroy:
