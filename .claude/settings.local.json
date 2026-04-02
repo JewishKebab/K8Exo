@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(wsl --distribution Ubuntu --exec bash -lc \"mkdir -p ~/K8Exo/helm-values/dify\")",
-      "Bash(wsl --distribution Ubuntu --exec bash -lc \"cd ~/K8Exo && git add -A && git commit -m 'add Dify app + helm values'\")"
-    ]
-  }
-}
