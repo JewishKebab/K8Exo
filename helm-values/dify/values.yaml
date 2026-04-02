@@ -60,7 +60,9 @@ sandbox:
 postgresql:
   enabled: true
   image:
-    tag: "15-debian-12"
+    registry: ghcr.io
+    repository: bitnami/postgresql
+    tag: "15"
   global:
     storageClass: "local-path"
     postgresql:
@@ -76,7 +78,9 @@ postgresql:
 redis:
   enabled: true
   image:
-    tag: "7.2-debian-12"
+    registry: ghcr.io
+    repository: bitnami/redis
+    tag: "7.2"
   global:
     redis:
       password: "difyredis"
