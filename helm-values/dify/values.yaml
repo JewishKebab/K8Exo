@@ -19,6 +19,14 @@ api:
   extraEnv:
     - name: OLLAMA_API_BASE
       value: "http://ollama.platform.svc.cluster.local:11434"
+    - name: REDIS_HOST
+      value: "dify-redis-master"
+    - name: REDIS_PORT
+      value: "6379"
+    - name: REDIS_PASSWORD
+      value: "difyredis"
+    - name: CELERY_BROKER_URL
+      value: "redis://:difyredis@dify-redis-master:6379/1"
 
 # ── Worker (async tasks: embeddings, indexing) ───────────────────────────────
 worker:
@@ -33,6 +41,14 @@ worker:
   extraEnv:
     - name: OLLAMA_API_BASE
       value: "http://ollama.platform.svc.cluster.local:11434"
+    - name: REDIS_HOST
+      value: "dify-redis-master"
+    - name: REDIS_PORT
+      value: "6379"
+    - name: REDIS_PASSWORD
+      value: "difyredis"
+    - name: CELERY_BROKER_URL
+      value: "redis://:difyredis@dify-redis-master:6379/1"
 
 # ── Web (frontend) ───────────────────────────────────────────────────────────
 web:
