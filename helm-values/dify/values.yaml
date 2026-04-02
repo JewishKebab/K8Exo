@@ -62,7 +62,7 @@ postgresql:
   image:
     registry: docker.io
     repository: postgres
-    tag: "15-alpine"
+    tag: "15"
     pullPolicy: IfNotPresent
   global:
     storageClass: "local-path"
@@ -81,7 +81,7 @@ redis:
   image:
     registry: docker.io
     repository: redis
-    tag: "7.2-alpine"
+    tag: "7.2"
     pullPolicy: IfNotPresent
   global:
     redis:
