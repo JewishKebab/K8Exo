@@ -3,7 +3,7 @@ TF_VERSION   := 1.9.8
 TF_BIN       := /usr/local/bin/terraform
 TF_DIR       := $(CURDIR)/terraform
 
-.PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy
+.PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy forward forward-argocd forward-dify
 
 ## Single entry point — run this once to bring up the full stack
 bootstrap: install-terraform install-k3s kubeconfig tf-init tf-apply
@@ -56,6 +56,21 @@ tf-init:
 
 tf-apply:
 	@cd $(TF_DIR) && terraform apply -input=false -auto-approve
+
+# ── Port Forwards ────────────────────────────────────────────────────────────
+
+## Forward all services (runs in background)
+forward:
+	@kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+	@kubectl port-forward svc/dify-web -n platform 3000:80 &
+	@echo "ArgoCD → http://localhost:8080"
+	@echo "Dify   → http://localhost:3000"
+
+forward-argocd:
+	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+forward-dify:
+	kubectl port-forward svc/dify-web -n platform 3000:80
 
 # Tear everything down (keeps k3s intact — run k3s-uninstall.sh separately)
 destroy:
