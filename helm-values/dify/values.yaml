@@ -64,6 +64,11 @@ web:
     limits:
       memory: "512Mi"
       cpu: "1"
+  extraEnv:
+    - name: CONSOLE_API_URL
+      value: "http://localhost:5001"
+    - name: APP_API_URL
+      value: "http://localhost:5001"
 
 # ── Sandbox (code execution) ─────────────────────────────────────────────────
 sandbox:
