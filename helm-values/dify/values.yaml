@@ -1,6 +1,10 @@
 global:
   useTLS: false
   appSecretKey: "changeme-replace-with-openssl-rand-base64-42"
+  edition: "COMMUNITY"
+
+enterprise:
+  enabled: false
 
 # ── API (backend) ────────────────────────────────────────────────────────────
 api:
