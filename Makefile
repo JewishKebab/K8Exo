@@ -66,13 +66,16 @@ tf-apply:
 #   11434 → Ollama (LLM inference)
 #   6333  → Qdrant (vector DB REST)
 
-## Forward all services in the background
+## Forward all services via socat (WSL2-compatible)
 forward:
-	@kubectl port-forward svc/argocd-server   -n argocd   8080:80    &
-	@kubectl port-forward svc/dify-web        -n platform 3000:80    &
-	@kubectl port-forward svc/dify-api        -n platform 5001:5001  &
-	@kubectl port-forward svc/ollama          -n platform 11434:11434 &
-	@kubectl port-forward svc/dify-qdrant     -n platform 6333:6333  &
+	@which socat >/dev/null 2>&1 || apt-get install -y socat
+	@kill $$(pgrep -f "socat TCP-LISTEN") 2>/dev/null || true
+	@sleep 1
+	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc dify-web-svc   -n platform -o jsonpath='{.spec.clusterIP}'):3000  &
+	@socat TCP-LISTEN:5001,fork,reuseaddr TCP:$$(kubectl get svc dify-api-svc   -n platform -o jsonpath='{.spec.clusterIP}'):5001  &
+	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server  -n argocd   -o jsonpath='{.spec.clusterIP}'):80    &
+	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama        -n platform -o jsonpath='{.spec.clusterIP}'):11434 &
+	@socat TCP-LISTEN:6333,fork,reuseaddr TCP:$$(kubectl get svc dify-qdrant    -n platform -o jsonpath='{.spec.clusterIP}'):6333  &
 	@echo ""
 	@echo "Services forwarded (background):"
 	@echo "  ArgoCD   → http://localhost:8080"
@@ -85,25 +88,25 @@ forward:
 	@kubectl -n argocd get secret argocd-initial-admin-secret \
 		-o jsonpath='{.data.password}' | base64 -d && echo
 
-## Kill all background port-forwards started by 'make forward'
+## Kill all socat forwarders
 forward-stop:
-	@pkill -f "kubectl port-forward" || true
+	@kill $$(pgrep -f "socat TCP-LISTEN") 2>/dev/null || true
 	@echo "All port-forwards stopped."
 
 forward-argocd:
-	kubectl port-forward svc/argocd-server -n argocd 8080:80
+	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.clusterIP}'):80
 
 forward-dify:
-	kubectl port-forward svc/dify-web -n platform 3000:80
+	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc dify-web-svc -n platform -o jsonpath='{.spec.clusterIP}'):3000
 
 forward-dify-api:
-	kubectl port-forward svc/dify-api -n platform 5001:5001
+	@socat TCP-LISTEN:5001,fork,reuseaddr TCP:$$(kubectl get svc dify-api-svc -n platform -o jsonpath='{.spec.clusterIP}'):5001
 
 forward-ollama:
-	kubectl port-forward svc/ollama -n platform 11434:11434
+	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama -n platform -o jsonpath='{.spec.clusterIP}'):11434
 
 forward-qdrant:
-	kubectl port-forward svc/dify-qdrant -n platform 6333:6333
+	@socat TCP-LISTEN:6333,fork,reuseaddr TCP:$$(kubectl get svc dify-qdrant -n platform -o jsonpath='{.spec.clusterIP}'):6333
 
 # Tear everything down (keeps k3s intact — run k3s-uninstall.sh separately)
 destroy:
