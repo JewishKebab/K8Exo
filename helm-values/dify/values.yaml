@@ -60,9 +60,10 @@ sandbox:
 postgresql:
   enabled: true
   image:
-    registry: ghcr.io
-    repository: bitnami/postgresql
-    tag: "15"
+    registry: docker.io
+    repository: postgres
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
   global:
     storageClass: "local-path"
     postgresql:
@@ -78,9 +79,10 @@ postgresql:
 redis:
   enabled: true
   image:
-    registry: ghcr.io
-    repository: bitnami/redis
-    tag: "7.2"
+    registry: docker.io
+    repository: redis
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
   global:
     redis:
       password: "difyredis"
