@@ -31,6 +31,8 @@ api:
       value: "2"
     - name: GUNICORN_TIMEOUT
       value: "360"
+    - name: EDITION
+      value: "SELF_HOSTED"
 
 # ── Worker (async tasks: embeddings, indexing) ───────────────────────────────
 worker:
