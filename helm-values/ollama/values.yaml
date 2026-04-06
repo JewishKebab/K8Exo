@@ -1,8 +1,8 @@
 ollama:
   gpu:
-    enabled: false
+    enabled: true
     type: nvidia
-    number: 0
+    number: 1
   # Models to pull on startup — fits comfortably on RTX 3060 12GB
   models:
     - llama3.2

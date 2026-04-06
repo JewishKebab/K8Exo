@@ -4,7 +4,7 @@ TF_BIN       := /usr/local/bin/terraform
 TF_DIR       := $(CURDIR)/terraform
 
 .PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy \
-        forward forward-stop forward-argocd forward-dify forward-dify-api forward-ollama forward-qdrant
+        forward forward-stop forward-argocd forward-open-webui forward-ollama
 
 ## Single entry point — run this once to bring up the full stack
 bootstrap: install-terraform install-k3s kubeconfig tf-init tf-apply
@@ -61,28 +61,22 @@ tf-apply:
 # ── Port Forwards ────────────────────────────────────────────────────────────
 # Ports:
 #   8080  → ArgoCD UI
-#   3000  → Dify Web (frontend)
-#   5001  → Dify API (backend)
+#   3000  → Open WebUI (chat frontend)
 #   11434 → Ollama (LLM inference)
-#   6333  → Qdrant (vector DB REST)
 
 ## Forward all services via socat (WSL2-compatible)
 forward:
 	@which socat >/dev/null 2>&1 || apt-get install -y socat
-	@kill $$(pgrep -f "socat TCP-LISTEN") 2>/dev/null || true
+	@pkill -x socat 2>/dev/null || true
 	@sleep 1
-	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc dify-web-svc   -n platform -o jsonpath='{.spec.clusterIP}'):3000  &
-	@socat TCP-LISTEN:5001,fork,reuseaddr TCP:$$(kubectl get svc dify-api-svc   -n platform -o jsonpath='{.spec.clusterIP}'):5001  &
-	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server  -n argocd   -o jsonpath='{.spec.clusterIP}'):80    &
-	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama        -n platform -o jsonpath='{.spec.clusterIP}'):11434 &
-	@socat TCP-LISTEN:6333,fork,reuseaddr TCP:$$(kubectl get svc dify-qdrant    -n platform -o jsonpath='{.spec.clusterIP}'):6333  &
+	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc open-webui    -n platform -o jsonpath='{.spec.clusterIP}'):80    &
+	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server -n argocd   -o jsonpath='{.spec.clusterIP}'):80    &
+	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama       -n platform -o jsonpath='{.spec.clusterIP}'):11434 &
 	@echo ""
 	@echo "Services forwarded (background):"
-	@echo "  ArgoCD   → http://localhost:8080"
-	@echo "  Dify UI  → http://localhost:3000"
-	@echo "  Dify API → http://localhost:5001"
-	@echo "  Ollama   → http://localhost:11434"
-	@echo "  Qdrant   → http://localhost:6333"
+	@echo "  Open WebUI → http://localhost:3000"
+	@echo "  ArgoCD     → http://localhost:8080"
+	@echo "  Ollama     → http://localhost:11434"
 	@echo ""
 	@echo "ArgoCD admin password:"
 	@kubectl -n argocd get secret argocd-initial-admin-secret \
@@ -90,23 +84,17 @@ forward:
 
 ## Kill all socat forwarders
 forward-stop:
-	@kill $$(pgrep -f "socat TCP-LISTEN") 2>/dev/null || true
+	@pkill -x socat 2>/dev/null || true
 	@echo "All port-forwards stopped."
 
 forward-argocd:
 	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.clusterIP}'):80
 
-forward-dify:
-	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc dify-web-svc -n platform -o jsonpath='{.spec.clusterIP}'):3000
-
-forward-dify-api:
-	@socat TCP-LISTEN:5001,fork,reuseaddr TCP:$$(kubectl get svc dify-api-svc -n platform -o jsonpath='{.spec.clusterIP}'):5001
+forward-open-webui:
+	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc open-webui -n platform -o jsonpath='{.spec.clusterIP}'):80
 
 forward-ollama:
 	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama -n platform -o jsonpath='{.spec.clusterIP}'):11434
-
-forward-qdrant:
-	@socat TCP-LISTEN:6333,fork,reuseaddr TCP:$$(kubectl get svc dify-qdrant -n platform -o jsonpath='{.spec.clusterIP}'):6333
 
 # Tear everything down (keeps k3s intact — run k3s-uninstall.sh separately)
 destroy:
