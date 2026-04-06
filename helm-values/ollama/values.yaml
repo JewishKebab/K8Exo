@@ -1,12 +1,22 @@
 ollama:
   gpu:
-    enabled: true
+    enabled: false   # device plugin not used in WSL2; GPU access via runtimeClassName below
     type: nvidia
-    number: 1
+    number: 0
   # Models to pull on startup — fits comfortably on RTX 3060 12GB
   models:
     - llama3.2
     - nomic-embed-text   # for embeddings / Qdrant ingestion
+
+# Use the NVIDIA container runtime so Ollama can see the GPU in WSL2
+runtimeClassName: nvidia
+
+# Expose GPU to the container via env var (bypasses device plugin requirement)
+extraEnv:
+  - name: NVIDIA_VISIBLE_DEVICES
+    value: "all"
+  - name: NVIDIA_DRIVER_CAPABILITIES
+    value: "compute,utility"
 
 resources:
   requests:
