@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dify
+  name: open-webui
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,12 +9,12 @@ spec:
   project: default
   sources:
     # Upstream Helm chart
-    - repoURL: https://langgenius.github.io/dify-helm
-      chart: dify
-      targetRevision: "2.8.0"
+    - repoURL: https://helm.openwebui.com/
+      chart: open-webui
+      targetRevision: "6.18.0"
       helm:
         valueFiles:
-          - $values/helm-values/dify/values.yaml
+          - $values/helm-values/open-webui/values.yaml
     # Our values live in this repo
     - repoURL: https://github.com/JewishKebab/K8Exo
       targetRevision: HEAD

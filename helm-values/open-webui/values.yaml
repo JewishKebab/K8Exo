@@ -1,0 +1,38 @@
+# ── Open WebUI ────────────────────────────────────────────────────────────────
+# Connects to the existing Ollama deployment in the same namespace.
+# Bundled Ollama is disabled — we manage Ollama separately.
+
+ollama:
+  enabled: false
+
+ollamaUrls:
+  - http://ollama.platform.svc.cluster.local:11434
+
+replicaCount: 1
+
+image:
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "1"
+
+# Persist chat history and uploaded documents
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: "local-path"
+  accessModes:
+    - ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 80
+
+# Pipelines (optional plugin runner) — disable to save resources
+pipelines:
+  enabled: false
