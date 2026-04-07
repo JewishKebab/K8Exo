@@ -13,6 +13,16 @@ spec:
       labels:
         app: searxng
     spec:
+      enableServiceLinks: false   # prevent K8s injecting SEARXNG_PORT as a URL
+      initContainers:
+        - name: copy-config
+          image: busybox
+          command: ["sh", "-c", "cp /config-ro/settings.yml /etc/searxng/settings.yml && chmod 644 /etc/searxng/settings.yml"]
+          volumeMounts:
+            - name: config-ro
+              mountPath: /config-ro
+            - name: config-rw
+              mountPath: /etc/searxng
       containers:
         - name: searxng
           image: searxng/searxng:latest
@@ -21,12 +31,9 @@ spec:
           env:
             - name: SEARXNG_SECRET
               value: "k8exo-searxng-secret"
-            - name: SEARXNG_LIMITER
-              value: "false"
           volumeMounts:
-            - name: config
-              mountPath: /etc/searxng/settings.yml
-              subPath: settings.yml
+            - name: config-rw
+              mountPath: /etc/searxng
           resources:
             requests:
               memory: "256Mi"
@@ -35,9 +42,11 @@ spec:
               memory: "512Mi"
               cpu: "500m"
       volumes:
-        - name: config
+        - name: config-ro
           configMap:
             name: searxng-config
+        - name: config-rw
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: ConfigMap
