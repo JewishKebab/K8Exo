@@ -60,12 +60,24 @@ data:
       secret_key: "k8exo-searxng-secret"
       limiter: false
       image_proxy: true
+    outgoing:
+      request_timeout: 3.0   # drop slow engines fast
+      max_request_timeout: 5.0
     search:
       safe_search: 0
       default_lang: "en"
       formats:
         - html
         - json
+    engines:
+      - name: google
+        disabled: false
+      - name: bing
+        disabled: false
+      - name: duckduckgo
+        disabled: true
+      - name: wikipedia
+        disabled: false
 ---
 apiVersion: v1
 kind: Service
