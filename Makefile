@@ -4,7 +4,7 @@ TF_BIN       := /usr/local/bin/terraform
 TF_DIR       := $(CURDIR)/terraform
 
 .PHONY: bootstrap install-terraform install-k3s kubeconfig tf-init tf-apply destroy \
-        forward forward-stop forward-argocd forward-open-webui forward-ollama
+        forward forward-stop forward-argocd forward-open-webui forward-ollama forward-n8n
 
 ## Single entry point — run this once to bring up the full stack
 bootstrap: install-terraform install-k3s kubeconfig tf-init tf-apply
@@ -63,6 +63,7 @@ tf-apply:
 #   8080  → ArgoCD UI
 #   3000  → Open WebUI (chat frontend)
 #   11434 → Ollama (LLM inference)
+#   5678  → n8n (workflow automation)
 
 ## Forward all services via socat (WSL2-compatible)
 forward:
@@ -72,11 +73,13 @@ forward:
 	@socat TCP-LISTEN:3000,fork,reuseaddr TCP:$$(kubectl get svc open-webui    -n platform -o jsonpath='{.spec.clusterIP}'):80    &
 	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server -n argocd   -o jsonpath='{.spec.clusterIP}'):80    &
 	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama       -n platform -o jsonpath='{.spec.clusterIP}'):11434 &
+	@socat TCP-LISTEN:5678,fork,reuseaddr TCP:$$(kubectl get svc n8n           -n platform -o jsonpath='{.spec.clusterIP}'):5678  &
 	@echo ""
 	@echo "Services forwarded (background):"
 	@echo "  Open WebUI → http://localhost:3000"
 	@echo "  ArgoCD     → http://localhost:8080"
 	@echo "  Ollama     → http://localhost:11434"
+	@echo "  n8n        → http://localhost:5678"
 	@echo ""
 	@echo "ArgoCD admin password:"
 	@kubectl -n argocd get secret argocd-initial-admin-secret \
@@ -95,6 +98,9 @@ forward-open-webui:
 
 forward-ollama:
 	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama -n platform -o jsonpath='{.spec.clusterIP}'):11434
+
+forward-n8n:
+	@socat TCP-LISTEN:5678,fork,reuseaddr TCP:$$(kubectl get svc n8n -n platform -o jsonpath='{.spec.clusterIP}'):5678
 
 # Tear everything down (keeps k3s intact — run k3s-uninstall.sh separately)
 destroy:

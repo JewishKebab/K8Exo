@@ -1,0 +1,31 @@
+main:
+  config:
+    # n8n instance URL (used for webhooks)
+    WEBHOOK_URL: "http://localhost:5678"
+    # Timezone
+    GENERIC_TIMEZONE: "Asia/Jerusalem"
+    # Ollama is available at this address from within the cluster
+    N8N_AI_OLLAMA_BASE_URL: "http://ollama.platform.svc.cluster.local:11434"
+
+  # Basic auth to protect the UI
+  secret:
+    N8N_BASIC_AUTH_ACTIVE: "true"
+    N8N_BASIC_AUTH_USER: "admin"
+    N8N_BASIC_AUTH_PASSWORD: "admin123"
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: "local-path"
+
+service:
+  type: ClusterIP
+  port: 5678
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "1"
