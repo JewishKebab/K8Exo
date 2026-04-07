@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searxng
+  namespace: platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searxng
+  template:
+    metadata:
+      labels:
+        app: searxng
+    spec:
+      containers:
+        - name: searxng
+          image: searxng/searxng:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SEARXNG_SECRET
+              value: "k8exo-searxng-secret"
+            - name: SEARXNG_LIMITER
+              value: "false"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/searxng/settings.yml
+              subPath: settings.yml
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: config
+          configMap:
+            name: searxng-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-config
+  namespace: platform
+data:
+  settings.yml: |
+    use_default_settings: true
+    server:
+      secret_key: "k8exo-searxng-secret"
+      limiter: false
+      image_proxy: true
+    search:
+      safe_search: 0
+      default_lang: "en"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: searxng
+  namespace: platform
+spec:
+  selector:
+    app: searxng
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
