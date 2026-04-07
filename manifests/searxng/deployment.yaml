@@ -63,6 +63,9 @@ data:
     search:
       safe_search: 0
       default_lang: "en"
+    formats:
+      - html
+      - json
 ---
 apiVersion: v1
 kind: Service
