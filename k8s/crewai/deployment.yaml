@@ -13,6 +13,8 @@ spec:
       labels:
         app: crewai
     spec:
+      imagePullSecrets:
+        - name: nexus-pull-secret
       containers:
         - name: crewai
           image: localhost:5000/crewai-service:latest
