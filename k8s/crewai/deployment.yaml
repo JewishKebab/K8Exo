@@ -17,7 +17,7 @@ spec:
         - name: nexus-pull-secret
       containers:
         - name: crewai
-          image: localhost:5000/crewai-service:latest
+          image: 10.43.179.5:5000/crewai-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
