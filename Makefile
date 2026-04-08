@@ -75,8 +75,8 @@ forward:
 	@socat TCP-LISTEN:8080,fork,reuseaddr TCP:$$(kubectl get svc argocd-server -n argocd   -o jsonpath='{.spec.clusterIP}'):80    &
 	@socat TCP-LISTEN:11434,fork,reuseaddr TCP:$$(kubectl get svc ollama       -n platform -o jsonpath='{.spec.clusterIP}'):11434 &
 	@socat TCP-LISTEN:5678,fork,reuseaddr TCP:$$(kubectl get svc n8n           -n platform -o jsonpath='{.spec.clusterIP}'):5678  &
-	@socat TCP-LISTEN:8081,fork,reuseaddr TCP:$$(kubectl get svc nexus3        -n platform -o jsonpath='{.spec.clusterIP}'):8081  &
-	@socat TCP-LISTEN:5000,fork,reuseaddr TCP:$$(kubectl get svc nexus3        -n platform -o jsonpath='{.spec.clusterIP}'):5000  &
+	@socat TCP-LISTEN:8081,fork,reuseaddr TCP:$$(kubectl get svc nexus-nexus3        -n platform -o jsonpath='{.spec.clusterIP}'):8081  &
+	@socat TCP-LISTEN:5000,fork,reuseaddr TCP:$$(kubectl get svc nexus-nexus3        -n platform -o jsonpath='{.spec.clusterIP}'):5000  &
 	@socat TCP-LISTEN:8000,fork,reuseaddr TCP:$$(kubectl get svc crewai        -n platform -o jsonpath='{.spec.clusterIP}'):8000  &
 	@echo ""
 	@echo "Services forwarded (background):"
@@ -110,8 +110,12 @@ forward-n8n:
 	@socat TCP-LISTEN:5678,fork,reuseaddr TCP:$$(kubectl get svc n8n -n platform -o jsonpath='{.spec.clusterIP}'):5678
 
 forward-nexus:
-	@socat TCP-LISTEN:8081,fork,reuseaddr TCP:$$(kubectl get svc nexus3 -n platform -o jsonpath='{.spec.clusterIP}'):8081 &
-	@socat TCP-LISTEN:5000,fork,reuseaddr TCP:$$(kubectl get svc nexus3 -n platform -o jsonpath='{.spec.clusterIP}'):5000
+	@pkill -x socat 2>/dev/null || true
+	@sleep 1
+	@socat TCP-LISTEN:8081,fork,reuseaddr TCP:$$(kubectl get svc nexus-nexus3 -n platform -o jsonpath='{.spec.clusterIP}'):8081 &
+	@socat TCP-LISTEN:5000,fork,reuseaddr TCP:$$(kubectl get svc nexus-nexus3 -n platform -o jsonpath='{.spec.clusterIP}'):5000 &
+	@echo "Nexus UI  → http://localhost:8081"
+	@echo "Nexus Docker → localhost:5000"
 
 forward-crewai:
 	@socat TCP-LISTEN:8000,fork,reuseaddr TCP:$$(kubectl get svc crewai -n platform -o jsonpath='{.spec.clusterIP}'):8000
