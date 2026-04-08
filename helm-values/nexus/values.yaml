@@ -1,0 +1,25 @@
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 20Gi
+
+service:
+  type: ClusterIP
+  port: 8081
+  additionalPorts:
+    - name: docker
+      port: 5000
+      targetPort: 5000
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "250m"
+  limits:
+    memory: "2Gi"
+    cpu: "1"
+
+# Increase JVM heap for stability
+env:
+  - name: INSTALL4J_ADD_VM_PARAMS
+    value: "-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=512m"

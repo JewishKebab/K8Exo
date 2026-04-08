@@ -6,6 +6,7 @@ ollama:
   # Models to pull on startup — fits comfortably on RTX 3060 12GB
   models:
     - llama3.2
+    - llama3.1:8b
     - nomic-embed-text   # for embeddings / Qdrant ingestion
 
 # Use the NVIDIA container runtime so Ollama can see the GPU in WSL2

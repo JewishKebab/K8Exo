@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crewai
+  namespace: platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crewai
+  template:
+    metadata:
+      labels:
+        app: crewai
+    spec:
+      containers:
+        - name: crewai
+          image: localhost:5000/crewai-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OLLAMA_URL
+              value: "http://ollama.platform.svc.cluster.local:11434"
+            - name: OLLAMA_MODEL
+              value: "ollama/llama3.1:8b"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10

@@ -1,0 +1,11 @@
+# Drop this file at /etc/rancher/k3s/registries.yaml and restart k3s:
+#   sudo cp k3s-registries.yaml /etc/rancher/k3s/registries.yaml
+#   sudo systemctl restart k3s
+#
+# This tells k3s to pull from your local Nexus Docker registry (HTTP, no TLS).
+# localhost:5000 is reachable because socat forwards it to the Nexus service.
+
+mirrors:
+  "localhost:5000":
+    endpoint:
+      - "http://localhost:5000"
