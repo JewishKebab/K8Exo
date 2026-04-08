@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://stevehipwell.github.io/helm-charts/
       chart: nexus3
-      targetRevision: "4.42.0"
+      targetRevision: "5.21.0"
       helm:
         valueFiles:
           - $values/helm-values/nexus/values.yaml

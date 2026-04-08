@@ -9,7 +9,7 @@ service:
   additionalPorts:
     - name: docker
       port: 5000
-      targetPort: 5000
+      containerPort: 5000
 
 resources:
   requests:
@@ -19,7 +19,5 @@ resources:
     memory: "2Gi"
     cpu: "1"
 
-# Increase JVM heap for stability
-env:
-  - name: INSTALL4J_ADD_VM_PARAMS
-    value: "-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=512m"
+# JVM heap
+install4jAddVmParams: "-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=512m"
