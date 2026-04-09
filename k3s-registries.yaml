@@ -3,6 +3,6 @@
 #   sudo systemctl restart k3s
 
 mirrors:
-  "10.43.179.5:5000":
+  "localhost:5000":
     endpoint:
-      - "http://10.43.179.5:5000"
+      - "http://localhost:5000"
